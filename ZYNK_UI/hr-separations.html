@@ -1,0 +1,127 @@
+<!-- This is a simplified version of HR Separations - same structure as HR Leaves -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Separations - InternFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>* { font-family: 'Inter', sans-serif; } .sidebar-link.active { background: linear-gradient(90deg, #6366F1 0%, #8B5CF6 100%); color: white; }</style>
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm fixed top-0 left-0 right-0 z-10">
+        <div class="px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <svg class="h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    <h1 class="ml-3 text-xl font-bold text-gray-900">InternFlow</h1>
+                    <span class="ml-4 px-3 py-1 bg-indigo-100 text-indigo-700 text-sm font-medium rounded-full">HR Portal</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm font-medium text-gray-900" id="userName">HR Manager</p>
+                        <p class="text-xs text-gray-500" id="userEmail">hr@internflow.com</p>
+                    </div>
+                    <button onclick="AppHelpers.logout()" class="text-gray-600 hover:text-gray-900">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex pt-16">
+        <aside class="w-64 bg-white h-screen fixed left-0 top-16 border-r border-gray-200 overflow-y-auto">
+            <nav class="p-4 space-y-1">
+                <a href="hr-dashboard.html" class="sidebar-link flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100"><svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>Dashboard</a>
+                <a href="hr-interns.html" class="sidebar-link flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100"><svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>Interns</a>
+                <a href="hr-leaves.html" class="sidebar-link flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100"><svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>Leaves</a>
+                <a href="hr-invoices.html" class="sidebar-link flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100"><svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>Invoices</a>
+                <a href="hr-trainings.html" class="sidebar-link flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100"><svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>Trainings</a>
+                <a href="hr-announcements.html" class="sidebar-link flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100"><svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>Announcements</a>
+                <a href="hr-separations.html" class="sidebar-link active flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100"><svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>Separations</a>
+                <a href="hr-ai-summary.html" class="sidebar-link flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100"><svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>AI Summary</a>
+            </nav>
+        </aside>
+
+        <main class="flex-1 ml-64 p-8">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-900">Separation Requests</h2>
+                <p class="text-gray-600 mt-1">Manage intern separation requests</p>
+            </div>
+
+            <div id="separationsList" class="bg-white rounded-xl shadow-sm border border-gray-200 divide-y divide-gray-200">
+                <!-- Will be populated -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        if (!AppHelpers.isAuthenticated()) window.location.href = 'hr-login.html';
+        const userInfo = AppHelpers.getUserInfo();
+        if (userInfo) {
+            document.getElementById('userName').textContent = userInfo.name || 'HR Manager';
+            document.getElementById('userEmail').textContent = userInfo.email || '';
+        }
+
+        async function loadSeparations() {
+            try {
+                const seps = await API.separations.getPending();
+                const container = document.getElementById('separationsList');
+                
+                if (seps.length === 0) {
+                    container.innerHTML = '<div class="p-8 text-center text-gray-500">No pending separation requests</div>';
+                    return;
+                }
+
+                container.innerHTML = seps.map(sep => `
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">${sep.internName}</h3>
+                                <p class="text-sm text-gray-500">${sep.internEmail}</p>
+                                <p class="text-sm text-gray-700 mt-2"><strong>Date:</strong> ${AppHelpers.formatDate(sep.requestedSeparationDate)}</p>
+                                <p class="text-sm text-gray-600 mt-1">${sep.reason}</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="approveSep(${sep.id})" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">Approve</button>
+                                <button onclick="rejectSep(${sep.id})" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">Reject</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load separations:', error);
+            }
+        }
+
+        async function approveSep(id) {
+            if (!confirm('Approve this separation request?')) return;
+            try {
+                await API.separations.approve(id, userInfo.name || 'HR Manager');
+                AppHelpers.showToast('Separation approved!', 'success');
+                loadSeparations();
+            } catch (error) {
+                console.error('Failed:', error);
+            }
+        }
+
+        async function rejectSep(id) {
+            if (!confirm('Reject this separation request?')) return;
+            try {
+                await API.separations.reject(id, userInfo.name || 'HR Manager', 'Not approved');
+                AppHelpers.showToast('Separation rejected!', 'success');
+                loadSeparations();
+            } catch (error) {
+                console.error('Failed:', error);
+            }
+        }
+
+        loadSeparations();
+    </script>
+</body>
+</html>
+
