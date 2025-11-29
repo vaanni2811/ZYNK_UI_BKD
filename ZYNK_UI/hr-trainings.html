@@ -113,6 +113,20 @@
         </div>
     </div>
 
+    <!-- View Assignments Modal -->
+    <div id="assignmentsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-2xl w-full p-6">
+            <h3 class="text-2xl font-bold text-gray-900 mb-6">Training Assignments</h3>
+            <input type="hidden" id="selectedTrainingIdForAssignments">
+            <div id="assignmentsList" class="space-y-2 max-h-96 overflow-y-auto mb-4">
+                <!-- Will be populated by JavaScript -->
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button onclick="closeAssignmentsModal()" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         if (!AppHelpers.isAuthenticated()) window.location.href = 'hr-login.html';
         
@@ -123,13 +137,23 @@
         }
 
         let allInterns = [];
+        let allAssignments = [];
 
         async function loadTrainings() {
             try {
                 const trainings = await API.trainings.getAll();
+                await loadAssignments();
                 displayTrainings(trainings);
             } catch (error) {
                 console.error('Failed to load trainings:', error);
+            }
+        }
+
+        async function loadAssignments() {
+            try {
+                allAssignments = await API.trainings.getAllAssignments();
+            } catch (error) {
+                console.error('Failed to load assignments:', error);
             }
         }
 
@@ -149,7 +173,11 @@
                 return;
             }
 
-            container.innerHTML = trainings.map(training => `
+            container.innerHTML = trainings.map(training => {
+                const assignments = allAssignments.filter(a => a.trainingId === training.id);
+                const assignmentsCount = assignments.length;
+                
+                return `
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <div class="flex items-start space-x-3 mb-4">
                         <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -160,23 +188,32 @@
                         <div class="flex-1">
                             <h3 class="text-lg font-bold text-gray-900">${training.title}</h3>
                             ${training.description ? `<p class="text-sm text-gray-600 mt-1">${training.description}</p>` : ''}
+                            <p class="text-xs text-gray-500 mt-2">Assigned to ${assignmentsCount} intern(s)</p>
                         </div>
                     </div>
                     <div class="space-y-3">
                         <a href="${training.link}" target="_blank" class="block text-sm text-indigo-600 hover:text-indigo-700 truncate">
                             ${training.link}
                         </a>
-                        <div class="flex space-x-2">
-                            <button onclick="openAssignModal(${training.id})" class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
-                                Assign to Interns
-                            </button>
-                            <button onclick="deleteTraining(${training.id})" class="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium">
-                                Delete
-                            </button>
+                        <div class="flex flex-col space-y-2">
+                            <div class="flex space-x-2">
+                                <button onclick="openAssignModal(${training.id})" class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
+                                    Assign to Interns
+                                </button>
+                                <button onclick="deleteTraining(${training.id})" class="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium">
+                                    Delete
+                                </button>
+                            </div>
+                            ${assignmentsCount > 0 ? `
+                                <button onclick="openAssignmentsModal(${training.id})" class="w-full px-4 py-2 border border-indigo-300 text-indigo-600 rounded-lg hover:bg-indigo-50 text-sm font-medium">
+                                    View Assignments (${assignmentsCount})
+                                </button>
+                            ` : ''}
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function openCreateModal() {
@@ -210,17 +247,27 @@
             document.getElementById('selectedTrainingId').value = trainingId;
             
             await loadInterns();
+            await loadAssignments();
+            
+            // Get list of intern IDs already assigned to this training
+            const assignedInternIds = allAssignments
+                .filter(a => a.trainingId === trainingId)
+                .map(a => a.internId);
             
             const internsList = document.getElementById('internsList');
-            internsList.innerHTML = allInterns.map(intern => `
+            internsList.innerHTML = allInterns.map(intern => {
+                const isAssigned = assignedInternIds.includes(intern.id);
+                return `
                 <label class="flex items-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
-                    <input type="checkbox" value="${intern.id}" class="intern-checkbox mr-3 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                    <div>
+                    <input type="checkbox" value="${intern.id}" ${isAssigned ? 'checked' : ''} class="intern-checkbox mr-3 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                    <div class="flex-1">
                         <div class="font-medium text-gray-900">${intern.user?.name || 'Unknown'}</div>
                         <div class="text-sm text-gray-500">${intern.user?.email || ''}</div>
                     </div>
+                    ${isAssigned ? '<span class="text-xs text-indigo-600 font-medium">Already Assigned</span>' : ''}
                 </label>
-            `).join('');
+            `;
+            }).join('');
             
             document.getElementById('assignModal').classList.remove('hidden');
         }
@@ -242,8 +289,58 @@
                 await API.trainings.bulkAssign(trainingId, selectedInterns);
                 AppHelpers.showToast(`Training assigned to ${selectedInterns.length} intern(s)!`, 'success');
                 closeAssignModal();
+                // Refresh assignments and trainings to keep UI in sync
+                await loadAssignments();
+                loadTrainings();
             } catch (error) {
                 console.error('Failed to assign training:', error);
+            }
+        }
+
+        async function openAssignmentsModal(trainingId) {
+            document.getElementById('selectedTrainingIdForAssignments').value = trainingId;
+            
+            await loadAssignments();
+            
+            const assignments = allAssignments.filter(a => a.trainingId === trainingId);
+            const assignmentsList = document.getElementById('assignmentsList');
+            
+            if (assignments.length === 0) {
+                assignmentsList.innerHTML = '<div class="text-center py-8 text-gray-500">No assignments found for this training</div>';
+            } else {
+                assignmentsList.innerHTML = assignments.map(assignment => `
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-900">${assignment.internName || 'Unknown'}</div>
+                            <div class="text-sm text-gray-500">${assignment.internEmail || ''}</div>
+                            <div class="text-xs text-gray-400 mt-1">Assigned: ${AppHelpers.formatDate(assignment.assignedAt)}</div>
+                        </div>
+                        <button onclick="unassignTraining(${assignment.trainingId}, ${assignment.internId}, '${assignment.internName}')" 
+                                class="ml-4 px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium">
+                            Unassign
+                        </button>
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('assignmentsModal').classList.remove('hidden');
+        }
+
+        function closeAssignmentsModal() {
+            document.getElementById('assignmentsModal').classList.add('hidden');
+        }
+
+        async function unassignTraining(trainingId, internId, internName) {
+            if (!confirm(`Are you sure you want to unassign this training from ${internName}?`)) return;
+            
+            try {
+                await API.trainings.unassign(trainingId, internId);
+                AppHelpers.showToast('Training unassigned successfully!', 'success');
+                closeAssignmentsModal();
+                loadTrainings();
+            } catch (error) {
+                console.error('Failed to unassign training:', error);
+                AppHelpers.showToast('Failed to unassign training', 'error');
             }
         }
 

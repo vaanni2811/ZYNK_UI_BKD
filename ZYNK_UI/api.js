@@ -22,7 +22,7 @@ const API = {
             headers,
         };
         
-        if (data && (method === 'POST' || method === 'PUT')) {
+        if (data && (method === 'POST' || method === 'PUT' || method === 'DELETE')) {
             config.body = JSON.stringify(data);
         }
         
@@ -67,8 +67,8 @@ const API = {
         return this.request('PUT', endpoint, data);
     },
     
-    delete(endpoint) {
-        return this.request('DELETE', endpoint);
+    delete(endpoint, data = null) {
+        return this.request('DELETE', endpoint, data);
     },
     
     // ============ Authentication APIs ============
@@ -150,6 +150,26 @@ const API = {
             return API.get('/leaves/pending');
         },
         
+        getTotal() {
+            return API.get('/leaves/total');
+        },
+        
+        getApproved() {
+            return API.get('/leaves/approved');
+        },
+        
+        getRejected() {
+            return API.get('/leaves/rejected');
+        },
+        
+        getPaid() {
+            return API.get('/leaves/paid');
+        },
+        
+        getUnpaid() {
+            return API.get('/leaves/unpaid');
+        },
+        
         approve(leaveId, approvedBy) {
             return API.put(`/leaves/${leaveId}/approve?approvedBy=${encodeURIComponent(approvedBy)}`);
         },
@@ -214,6 +234,10 @@ const API = {
         
         getMyAssignments() {
             return API.get('/trainings/my-assignments');
+        },
+        
+        unassign(trainingId, internId) {
+            return API.delete('/trainings/assign', { trainingId, internId });
         },
     },
     
