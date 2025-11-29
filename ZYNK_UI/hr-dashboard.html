@@ -237,13 +237,18 @@
             document.getElementById('userEmail').textContent = userInfo.email || '';
         }
 
+        // Chart instances
+        let leaveChartInstance = null;
+        let invoiceChartInstance = null;
+
         // Load dashboard data
         async function loadDashboardData() {
             try {
                 // Load all data in parallel
-                const [interns, pendingLeaves, allInvoices, pendingSeparations, announcements] = await Promise.all([
+                const [interns, pendingLeaves, leaveStats, allInvoices, pendingSeparations, announcements] = await Promise.all([
                     API.interns.getAll(),
                     API.leaves.getPending(),
+                    API.leaves.getTotal(),
                     API.invoices.getAll(),
                     API.separations.getPending(),
                     API.announcements.getActive()
@@ -253,12 +258,12 @@
                 document.getElementById('totalInterns').textContent = interns.length;
                 document.getElementById('pendingLeaves').textContent = pendingLeaves.length;
                 
-                const pendingInvoiceCount = allInvoices.filter(inv => inv.status === 'PENDING').length;
+                const pendingInvoiceCount = allInvoices.filter(inv => inv.status === 'PENDING' || inv.status === 'Pending').length;
                 document.getElementById('pendingInvoices').textContent = pendingInvoiceCount;
                 document.getElementById('pendingSeparations').textContent = pendingSeparations.length;
 
-                // Create charts
-                createLeaveChart(pendingLeaves);
+                // Create charts with proper data
+                createLeaveChart(leaveStats);
                 createInvoiceChart(allInvoices);
 
                 // Display recent leaves
@@ -273,13 +278,18 @@
             }
         }
 
-        function createLeaveChart(leaves) {
-            const approved = leaves.filter(l => l.status === 'APPROVED').length;
-            const pending = leaves.filter(l => l.status === 'PENDING').length;
-            const rejected = leaves.filter(l => l.status === 'REJECTED').length;
+        function createLeaveChart(leaveStats) {
+            // Destroy existing chart if it exists
+            if (leaveChartInstance) {
+                leaveChartInstance.destroy();
+            }
+
+            const pending = leaveStats.pendingLeaves || 0;
+            const approved = leaveStats.approvedLeaves || 0;
+            const rejected = leaveStats.rejectedLeaves || 0;
 
             const ctx = document.getElementById('leaveChart').getContext('2d');
-            new Chart(ctx, {
+            leaveChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Pending', 'Approved', 'Rejected'],
@@ -302,12 +312,17 @@
         }
 
         function createInvoiceChart(invoices) {
-            const pending = invoices.filter(i => i.status === 'PENDING').length;
-            const approved = invoices.filter(i => i.status === 'APPROVED').length;
+            // Destroy existing chart if it exists
+            if (invoiceChartInstance) {
+                invoiceChartInstance.destroy();
+            }
+
+            const pending = invoices.filter(i => i.status === 'PENDING' || i.status === 'Pending').length;
+            const approved = invoices.filter(i => i.status === 'APPROVED' || i.status === 'Approved').length;
             const paid = invoices.filter(i => i.status === 'PAID' || i.status === 'Paid').length;
 
             const ctx = document.getElementById('invoiceChart').getContext('2d');
-            new Chart(ctx, {
+            invoiceChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Pending', 'Approved', 'Paid'],
